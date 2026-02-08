@@ -19,14 +19,14 @@ import {
 } from "@/lib/queries";
 
 const COLORS = [
-  "#3B82F6",
-  "#10B981",
-  "#F59E0B",
-  "#EF4444",
-  "#8B5CF6",
-  "#EC4899",
-  "#06B6D4",
-  "#F97316",
+  "#D45E00",
+  "#E03A00",
+  "#C22D00",
+  "#B34E00",
+  "#A06000",
+  "#CC4400",
+  "#8B3A00",
+  "#D47000",
 ];
 
 export default function VideoGrowthChart() {
@@ -76,25 +76,25 @@ export default function VideoGrowthChart() {
   }, []);
 
   if (loading) {
-    return <div className="animate-pulse h-96 bg-gray-800 rounded-lg" />;
+    return <div className="animate-pulse h-96 bg-card rounded-xl" />;
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">
+    <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+      <h3 className="text-lg font-semibold text-foreground mb-4">
         直近の動画 - 再生回数推移
       </h3>
       {chartData.length > 0 ? (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E8D8A0" />
             <XAxis
               dataKey="date"
-              stroke="#9CA3AF"
+              stroke="#8A7340"
               tick={{ fontSize: 12 }}
             />
             <YAxis
-              stroke="#9CA3AF"
+              stroke="#8A7340"
               tick={{ fontSize: 12 }}
               tickFormatter={(v) =>
                 v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v.toString()
@@ -102,11 +102,12 @@ export default function VideoGrowthChart() {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#1F2937",
-                border: "1px solid #374151",
+                backgroundColor: "#FFFDF5",
+                border: "1px solid #E8B800",
                 borderRadius: "8px",
+                color: "#2A1F00",
               }}
-              labelStyle={{ color: "#9CA3AF" }}
+              labelStyle={{ color: "#8A7340" }}
               formatter={(value, name) => {
                 const video = videoNames.find((v) => v.id === String(name));
                 return [Number(value).toLocaleString(), video?.title ?? String(name)];
@@ -132,7 +133,7 @@ export default function VideoGrowthChart() {
           </LineChart>
         </ResponsiveContainer>
       ) : (
-        <p className="text-gray-500">
+        <p className="text-muted">
           直近30日以内に公開された動画がありません
         </p>
       )}

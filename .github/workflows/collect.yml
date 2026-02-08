@@ -1,0 +1,57 @@
+name: YouTube Data Collection
+
+on:
+  schedule:
+    # 日次データ収集 (毎日 18:00 UTC = 03:00 JST)
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "収集モード"
+        required: true
+        default: "daily"
+        type: choice
+        options:
+          - daily
+          - recent
+
+jobs:
+  collect-daily:
+    if: github.event_name == 'schedule' || github.event.inputs.mode == 'daily'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run daily collection
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/collect.py --mode daily
+
+  collect-recent:
+    if: github.event_name == 'schedule' || github.event.inputs.mode == 'recent'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run recent scraping
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/collect.py --mode recent

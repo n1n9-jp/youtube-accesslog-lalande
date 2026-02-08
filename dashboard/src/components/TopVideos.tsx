@@ -13,6 +13,12 @@ function formatDuration(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function formatViews(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
+
 export default function TopVideos() {
   const [videos, setVideos] = useState<TopVideo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,56 +30,66 @@ export default function TopVideos() {
   }, []);
 
   if (loading) {
-    return <div className="animate-pulse h-96 bg-gray-800 rounded-lg" />;
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="animate-pulse bg-card rounded-xl h-64" />
+        ))}
+      </div>
+    );
+  }
+
+  if (videos.length === 0) {
+    return <p className="text-muted">データがありません</p>;
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">
-        再生回数 Top 20
-      </h3>
-      {videos.length > 0 ? (
-        <div className="space-y-3">
-          {videos.map((video, i) => (
-            <div
-              key={video.video_id}
-              className="flex items-center gap-4 p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <span className="text-gray-400 font-mono w-8 text-right">
-                {i + 1}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {videos.map((video, i) => (
+        <a
+          key={video.video_id}
+          href={`https://www.youtube.com/watch?v=${video.video_id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-card rounded-xl border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden group"
+        >
+          {/* Thumbnail */}
+          <div className="relative">
+            {video.thumbnail_url && (
+              <img
+                src={video.thumbnail_url}
+                alt={video.title}
+                className="w-full aspect-video object-cover"
+              />
+            )}
+            {/* Rank badge */}
+            <span className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              #{i + 1}
+            </span>
+            {/* Duration */}
+            {video.duration_seconds > 0 && (
+              <span className="absolute bottom-1 right-1 bg-black/75 text-white text-xs px-1.5 py-0.5 rounded">
+                {formatDuration(video.duration_seconds)}
               </span>
-              {video.thumbnail_url && (
-                <img
-                  src={video.thumbnail_url}
-                  alt={video.title}
-                  className="w-24 h-14 object-cover rounded"
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <a
-                  href={`https://www.youtube.com/watch?v=${video.video_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white text-sm font-medium hover:text-blue-400 truncate block"
-                >
-                  {video.title}
-                </a>
-                <div className="flex gap-3 text-xs text-gray-400 mt-1">
-                  <span>{video.published_at?.slice(0, 10)}</span>
-                  {video.duration_seconds > 0 && (
-                    <span>{formatDuration(video.duration_seconds)}</span>
-                  )}
-                </div>
-              </div>
-              <span className="text-white font-semibold whitespace-nowrap">
-                {video.view_count.toLocaleString()} 回
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="p-3">
+            <h4 className="text-foreground text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+              {video.title}
+            </h4>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-accent font-bold text-sm">
+                {formatViews(video.view_count)} 回
+              </span>
+              <span className="text-muted text-xs">
+                {video.published_at?.slice(0, 10)}
               </span>
             </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500">データがありません</p>
-      )}
+          </div>
+        </a>
+      ))}
     </div>
   );
 }

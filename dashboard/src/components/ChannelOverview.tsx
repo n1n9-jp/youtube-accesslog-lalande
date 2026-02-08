@@ -37,7 +37,7 @@ export default function ChannelOverview() {
   }, []);
 
   if (loading) {
-    return <div className="animate-pulse h-64 bg-gray-800 rounded-lg" />;
+    return <div className="animate-pulse h-64 bg-card rounded-lg" />;
   }
 
   return (
@@ -45,21 +45,21 @@ export default function ChannelOverview() {
       {/* KPI Cards */}
       {latest && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gray-800 rounded-lg p-6">
-            <p className="text-gray-400 text-sm">登録者数</p>
-            <p className="text-3xl font-bold text-white">
+          <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+            <p className="text-muted text-sm">登録者数</p>
+            <p className="text-3xl font-bold text-primary">
               {formatNumber(latest.subscriber_count)}
             </p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
-            <p className="text-gray-400 text-sm">総再生回数</p>
-            <p className="text-3xl font-bold text-white">
+          <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+            <p className="text-muted text-sm">総再生回数</p>
+            <p className="text-3xl font-bold text-accent">
               {formatNumber(latest.total_view_count)}
             </p>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
-            <p className="text-gray-400 text-sm">動画数</p>
-            <p className="text-3xl font-bold text-white">
+          <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+            <p className="text-muted text-sm">動画数</p>
+            <p className="text-3xl font-bold text-accent-red">
               {latest.video_count.toLocaleString()}
             </p>
           </div>
@@ -67,29 +67,30 @@ export default function ChannelOverview() {
       )}
 
       {/* Subscriber Trend */}
-      <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">登録者数推移</h3>
+      <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+        <h3 className="text-lg font-semibold text-foreground mb-4">登録者数推移</h3>
         {snapshots.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={snapshots}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8D8A0" />
               <XAxis
                 dataKey="collected_date"
-                stroke="#9CA3AF"
+                stroke="#8A7340"
                 tick={{ fontSize: 12 }}
               />
               <YAxis
-                stroke="#9CA3AF"
+                stroke="#8A7340"
                 tick={{ fontSize: 12 }}
                 tickFormatter={formatNumber}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#1F2937",
-                  border: "1px solid #374151",
+                  backgroundColor: "#FFFDF5",
+                  border: "1px solid #E8B800",
                   borderRadius: "8px",
+                  color: "#2A1F00",
                 }}
-                labelStyle={{ color: "#9CA3AF" }}
+                labelStyle={{ color: "#8A7340" }}
                 formatter={(value) => [
                   Number(value).toLocaleString(),
                   "登録者数",
@@ -98,43 +99,44 @@ export default function ChannelOverview() {
               <Line
                 type="monotone"
                 dataKey="subscriber_count"
-                stroke="#3B82F6"
+                stroke="#D45E00"
                 strokeWidth={2}
                 dot={false}
               />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500">データがありません</p>
+          <p className="text-muted">データがありません</p>
         )}
       </div>
 
       {/* Total Views Trend */}
-      <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">
+      <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+        <h3 className="text-lg font-semibold text-foreground mb-4">
           総再生回数推移
         </h3>
         {snapshots.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={snapshots}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8D8A0" />
               <XAxis
                 dataKey="collected_date"
-                stroke="#9CA3AF"
+                stroke="#8A7340"
                 tick={{ fontSize: 12 }}
               />
               <YAxis
-                stroke="#9CA3AF"
+                stroke="#8A7340"
                 tick={{ fontSize: 12 }}
                 tickFormatter={formatNumber}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#1F2937",
-                  border: "1px solid #374151",
+                  backgroundColor: "#FFFDF5",
+                  border: "1px solid #E8B800",
                   borderRadius: "8px",
+                  color: "#2A1F00",
                 }}
-                labelStyle={{ color: "#9CA3AF" }}
+                labelStyle={{ color: "#8A7340" }}
                 formatter={(value) => [
                   Number(value).toLocaleString(),
                   "総再生回数",
@@ -143,14 +145,14 @@ export default function ChannelOverview() {
               <Line
                 type="monotone"
                 dataKey="total_view_count"
-                stroke="#10B981"
+                stroke="#E03A00"
                 strokeWidth={2}
                 dot={false}
               />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500">データがありません</p>
+          <p className="text-muted">データがありません</p>
         )}
       </div>
     </div>
