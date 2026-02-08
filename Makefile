@@ -1,11 +1,13 @@
 .PHONY: setup collect-daily collect-recent backfill dashboard
 
-PYTHON = python3
-PIP = pip3
 PROJECT_DIR = $(shell dirname $(realpath $(MAKEFILE_LIST)))
+VENV = $(PROJECT_DIR)/.venv
+PYTHON = $(VENV)/bin/python
+PIP = $(VENV)/bin/pip
 
-# Python環境セットアップ
+# Python仮想環境作成 + 依存パッケージインストール
 setup:
+	python3 -m venv $(VENV)
 	$(PIP) install -r requirements.txt
 
 # 初回バックフィル（全動画メタデータ + 現在統計）
