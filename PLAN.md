@@ -19,7 +19,7 @@
 | ダッシュボード | **Next.js 16 + Recharts + Tailwind CSS** | Vercelデプロイ対応、インタラクティブなWeb UI |
 | デプロイ | **Vercel** | Next.jsとの親和性、ゼロコンフィグデプロイ |
 | 設定管理 | `.env` + `python-dotenv` / `.env.local` | APIキーをコードから分離 |
-| スケジューリング | cron (macOS crontab) | デーモン不要、シンプルで確実 |
+| スケジューリング | **GitHub Actions** (cron schedule) | PCスリープに依存せず24時間確実に実行 |
 
 ---
 
@@ -28,7 +28,7 @@
 ```
 ┌─────────────────────┐     ┌──────────────┐     ┌─────────────────┐
 │  Python 収集スクリプト  │────▶│   Supabase   │◀────│  Next.js (Vercel)│
-│  (ローカルPC / cron)  │     │  (PostgreSQL) │     │   ダッシュボード   │
+│  (GitHub Actions)    │     │  (PostgreSQL) │     │   ダッシュボード   │
 └─────────────────────┘     └──────────────┘     └─────────────────┘
   - YouTube Data API v3                             - Recharts グラフ
   - yt-dlp スクレイピング                             - チャンネル概要
@@ -36,7 +36,7 @@
                                                     - 成長曲線比較
 ```
 
-- **Python収集スクリプト**: ローカルPCでcron実行。Supabaseに `service_role` キーで書き込み
+- **Python収集スクリプト**: GitHub Actionsでスケジュール実行。Supabaseに `service_role` キーで書き込み
 - **Next.js ダッシュボード**: Vercelにデプロイ。Supabaseに `anon` キー（読み取り専用）で参照
 - **Supabase**: RLSで読み取りのみ公開。書き込みは `service_role` キー経由のみ
 
@@ -63,7 +63,7 @@ youtube_accesslog_lalande/
 │   │   ├── app/
 │   │   │   ├── layout.tsx      # lang="ja", メタデータ設定
 │   │   │   ├── page.tsx        # メインページ (force-dynamic)
-│   │   │   └── globals.css     # ダークテーマベース
+│   │   │   └── globals.css     # 黄色テーマ（チャンネルバナーに合わせたカラースキーム）
 │   │   ├── components/
 │   │   │   ├── ChannelOverview.tsx    # KPIカード + 登録者数/総再生回数の折れ線グラフ
 │   │   │   ├── TopVideos.tsx          # 再生回数Top20ランキング（サムネ付き）
@@ -192,18 +192,17 @@ npm run dev   # http://localhost:3000 で確認
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 4. デプロイ実行
 
-### 6. cron 登録
+### 6. GitHub Actions による自動収集
+GitHubリポジトリの **Settings > Secrets and variables > Actions** で以下を登録:
+- `YOUTUBE_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`
+
+push すると以下のスケジュールで自動実行される:
+- `collect.yml`: 毎日 03:00 JST（日次データ収集）
+- `scrape.yml`: 毎日 10:00, 18:00 JST（新着動画スクレイピング）
+
+（オプション）ローカルMacでも cron で収集したい場合:
 ```bash
 make cron-install   # 登録すべきcrontabエントリを表示
-```
-
-表示される内容:
-```
-# ラランド YouTube 日次データ収集 (毎日 03:00 JST)
-0 3 * * * cd /path/to/project && python3 scripts/collect.py --mode daily >> data/collect.log 2>&1
-
-# 新着動画の高頻度スクレイピング (10:00, 18:00 JST)
-0 10,18 * * * cd /path/to/project && python3 scripts/collect.py --mode recent >> data/collect.log 2>&1
 ```
 
 ---
@@ -212,7 +211,7 @@ make cron-install   # 登録すべきcrontabエントリを表示
 
 | ターゲット | コマンド | 説明 |
 |---|---|---|
-| `make setup` | `pip3 install -r requirements.txt` | Python依存パッケージのインストール |
+| `make setup` | venv作成 + `pip install -r requirements.txt` | Python仮想環境作成 + 依存パッケージインストール |
 | `make backfill` | `python3 scripts/backfill.py` | 初回バックフィル（全動画メタデータ + 統計） |
 | `make collect-daily` | `python3 scripts/collect.py --mode daily` | 全動画の日次統計スナップショット |
 | `make collect-recent` | `python3 scripts/collect.py --mode recent` | 新着動画のスクレイピング高頻度取得 |
