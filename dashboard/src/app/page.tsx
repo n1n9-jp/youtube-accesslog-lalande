@@ -2,6 +2,8 @@ import ChannelOverview from "@/components/ChannelOverview";
 import TopVideos from "@/components/TopVideos";
 import VideoGrowthChart from "@/components/VideoGrowthChart";
 import VideoSmallMultiples from "@/components/VideoSmallMultiples";
+import VideoFrequencyChart from "@/components/VideoFrequencyChart";
+import VideoDurationHistogram from "@/components/VideoDurationHistogram";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +35,31 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground mb-4">ランキング</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">
+            動画ごとのパフォーマンス (Small Multiples)
+          </h2>
+          <VideoSmallMultiples />
+        </section>
+
+        <section>
           <TopVideos />
         </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <section>
+            <h2 className="text-xl font-semibold text-foreground mb-4">
+              動画公開頻度
+            </h2>
+            <VideoFrequencyChart />
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-foreground mb-4">
+              動画の長さの分布
+            </h2>
+            <VideoDurationHistogram />
+          </section>
+        </div>
       </main>
 
       <footer className="mt-16 py-6 border-t border-border text-center text-muted text-sm">

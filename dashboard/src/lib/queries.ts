@@ -139,3 +139,13 @@ export async function fetchVideoSnapshotsMulti(
   if (error) throw error;
   return data ?? [];
 }
+
+export async function fetchAllVideoMetadata(): Promise<VideoMeta[]> {
+  const { data, error } = await getSupabase()
+    .from("video_metadata")
+    .select("video_id, title, published_at, duration_seconds, thumbnail_url")
+    .order("published_at", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
