@@ -149,3 +149,51 @@ export async function fetchAllVideoMetadata(): Promise<VideoMeta[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+export type VideoWithStats = VideoMeta & {
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+};
+
+export async function fetchAllVideoStats(): Promise<VideoWithStats[]> {
+  const supabase = getSupabase();
+
+  // 1. 最新の取得日を特定
+  const { data: latestDateRow } = await supabase
+    .from("video_snapshots")
+    .select("collected_date")
+    .order("collected_date", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!latestDateRow) return [];
+  const latestDate = latestDateRow.collected_date;
+
+  // 2. その日の全統計を取得
+  const { data: snapshots } = await supabase
+    .from("video_snapshots")
+    .select("video_id, view_count, like_count, comment_count")
+    .eq("collected_date", latestDate);
+
+  if (!snapshots) return [];
+
+  // 3. 全メタデータを取得
+  const { data: metas } = await supabase
+    .from("video_metadata")
+    .select("video_id, title, published_at, duration_seconds, thumbnail_url");
+
+  if (!metas) return [];
+
+  // 4. マージ
+  const snapMap = new Map(snapshots.map(s => [s.video_id, s]));
+  return metas.map(m => {
+    const s = snapMap.get(m.video_id);
+    return {
+      ...m,
+      view_count: s?.view_count ?? 0,
+      like_count: s?.like_count ?? 0,
+      comment_count: s?.comment_count ?? 0,
+    };
+  });
+}
