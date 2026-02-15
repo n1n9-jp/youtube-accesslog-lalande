@@ -13,45 +13,37 @@ import {
 } from "recharts";
 import { fetchAllVideoStats, VideoWithStats } from "@/lib/queries";
 
-const BINS = [
-    { label: "1分未満", min: 0, max: 60 },
-    { label: "1-5分", min: 60, max: 300 },
-    { label: "5-10分", min: 300, max: 600 },
-    { label: "10-20分", min: 600, max: 1200 },
-    { label: "20-30分", min: 1200, max: 1800 },
-    { label: "30-60分", min: 1800, max: 3600 },
-    { label: "60分以上", min: 3600, max: Infinity },
-];
+export type MetricType = "view_count" | "like_count" | "comment_count";
 
-const COLORS = [
-    "#D45E00",
-    "#E03A00",
-    "#C22D00",
-    "#B34E00",
-    "#A06000",
-    "#CC4400",
-    "#8B3A00",
-];
-
-type Props = {
-    onSelect?: (label: string, videos: VideoWithStats[]) => void;
+type Bin = {
+    label: string;
+    min: number;
+    max: number;
 };
 
-export default function VideoDurationHistogram({ onSelect }: Props) {
-    const [allVideos, setAllVideos] = useState<VideoWithStats[]>([]);
+type Props = {
+    metric: MetricType;
+    title: string;
+    bins: Bin[];
+    colors: string[];
+    onSelect?: (label: string, videos: any[]) => void;
+};
+
+export default function VideoMetricHistogram({ metric, title, bins, colors, onSelect }: Props) {
+    const [allData, setAllData] = useState<VideoWithStats[]>([]);
     const [chartData, setChartData] = useState<{ label: string; count: number }[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function load() {
             try {
-                const videos = await fetchAllVideoStats();
-                setAllVideos(videos);
+                const data = await fetchAllVideoStats();
+                setAllData(data);
 
-                const counts = BINS.map((bin) => ({
+                const counts = bins.map((bin) => ({
                     label: bin.label,
-                    count: videos.filter(
-                        (v: any) => v.duration_seconds >= bin.min && v.duration_seconds < bin.max
+                    count: data.filter(
+                        (v) => v[metric] >= bin.min && v[metric] < bin.max
                     ).length,
                 }));
 
@@ -63,7 +55,7 @@ export default function VideoDurationHistogram({ onSelect }: Props) {
             }
         }
         load();
-    }, []);
+    }, [metric, bins]);
 
     if (loading) {
         return <div className="animate-pulse h-80 bg-card rounded-xl" />;
@@ -72,7 +64,7 @@ export default function VideoDurationHistogram({ onSelect }: Props) {
     return (
         <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
             <h3 className="text-lg font-semibold text-foreground mb-4">
-                動画の長さの分布
+                {title}
             </h3>
             <div className="h-80 w-full min-h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -84,9 +76,10 @@ export default function VideoDurationHistogram({ onSelect }: Props) {
                         <XAxis
                             dataKey="label"
                             stroke="#8A7340"
-                            tick={{ fontSize: 12 }}
+                            tick={{ fontSize: 11 }}
                             angle={-25}
                             textAnchor="end"
+                            interval={0}
                         />
                         <YAxis
                             stroke="#8A7340"
@@ -110,17 +103,17 @@ export default function VideoDurationHistogram({ onSelect }: Props) {
                             onClick={(data: any) => {
                                 if (!onSelect || !data) return;
                                 const label = data.label;
-                                const bin = BINS.find((b) => b.label === label);
+                                const bin = bins.find((b) => b.label === label);
                                 if (!bin) return;
 
-                                const filtered = allVideos.filter(
-                                    (v) => v.duration_seconds >= bin.min && v.duration_seconds < bin.max
+                                const filtered = allData.filter(
+                                    (v) => v[metric] >= bin.min && v[metric] < bin.max
                                 );
-                                onSelect(`長さが ${label}`, filtered);
+                                onSelect(`${title}: ${label}`, filtered);
                             }}
                         >
                             {chartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                             ))}
                         </Bar>
                     </BarChart>

@@ -10,21 +10,21 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from "recharts";
-import { fetchAllVideoMetadata, VideoMeta } from "@/lib/queries";
+import { fetchAllVideoStats, VideoWithStats } from "@/lib/queries";
 
 type Props = {
-    onSelect?: (label: string, videos: VideoMeta[]) => void;
+    onSelect?: (label: string, videos: VideoWithStats[]) => void;
 };
 
 export default function VideoFrequencyChart({ onSelect }: Props) {
-    const [allVideos, setAllVideos] = useState<VideoMeta[]>([]);
+    const [allVideos, setAllVideos] = useState<VideoWithStats[]>([]);
     const [chartData, setChartData] = useState<{ month: string; count: number }[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function load() {
             try {
-                const videos = await fetchAllVideoMetadata();
+                const videos = await fetchAllVideoStats();
                 setAllVideos(videos);
 
                 const monthMap = new Map<string, number>();
