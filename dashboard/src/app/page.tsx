@@ -1,6 +1,7 @@
 import ChannelOverview from "@/components/ChannelOverview";
 import TopVideos from "@/components/TopVideos";
 import VideoGrowthChart from "@/components/VideoGrowthChart";
+import VideoSmallMultiples from "@/components/VideoSmallMultiples";
 
 export const dynamic = "force-dynamic";
 
