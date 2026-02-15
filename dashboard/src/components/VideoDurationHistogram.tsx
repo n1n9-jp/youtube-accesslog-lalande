@@ -11,7 +11,7 @@ import {
     ResponsiveContainer,
     Cell,
 } from "recharts";
-import { fetchAllVideoMetadata } from "@/lib/queries";
+import { fetchAllVideoMetadata, VideoMeta } from "@/lib/queries";
 
 const BINS = [
     { label: "1分未満", min: 0, max: 60 },
@@ -33,23 +33,34 @@ const COLORS = [
     "#8B3A00",
 ];
 
-export default function VideoDurationHistogram() {
+type Props = {
+    onSelect?: (label: string, videos: VideoMeta[]) => void;
+};
+
+export default function VideoDurationHistogram({ onSelect }: Props) {
+    const [allVideos, setAllVideos] = useState<VideoMeta[]>([]);
     const [chartData, setChartData] = useState<{ label: string; count: number }[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function load() {
-            const allVideos = await fetchAllVideoMetadata();
+            try {
+                const videos = await fetchAllVideoMetadata();
+                setAllVideos(videos);
 
-            const counts = BINS.map((bin) => ({
-                label: bin.label,
-                count: allVideos.filter(
-                    (v: any) => v.duration_seconds >= bin.min && v.duration_seconds < bin.max
-                ).length,
-            }));
+                const counts = BINS.map((bin) => ({
+                    label: bin.label,
+                    count: videos.filter(
+                        (v: any) => v.duration_seconds >= bin.min && v.duration_seconds < bin.max
+                    ).length,
+                }));
 
-            setChartData(counts);
-            setLoading(false);
+                setChartData(counts);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
         }
         load();
     }, []);
@@ -63,9 +74,12 @@ export default function VideoDurationHistogram() {
             <h3 className="text-lg font-semibold text-foreground mb-4">
                 動画の長さの分布
             </h3>
-            <div className="h-80">
+            <div className="h-80 w-full min-h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                    <BarChart
+                        data={chartData}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
+                    >
                         <CartesianGrid strokeDasharray="3 3" stroke="#E8D8A0" vertical={false} />
                         <XAxis
                             dataKey="label"
@@ -88,7 +102,23 @@ export default function VideoDurationHistogram() {
                             }}
                             labelStyle={{ color: "#8A7340" }}
                         />
-                        <Bar dataKey="count" name="動画本数">
+                        <Bar
+                            dataKey="count"
+                            name="動画本数"
+                            cursor="pointer"
+                            isAnimationActive={false}
+                            onClick={(data: any) => {
+                                if (!onSelect || !data) return;
+                                const label = data.label;
+                                const bin = BINS.find((b) => b.label === label);
+                                if (!bin) return;
+
+                                const filtered = allVideos.filter(
+                                    (v) => v.duration_seconds >= bin.min && v.duration_seconds < bin.max
+                                );
+                                onSelect(`長さが ${label}`, filtered);
+                            }}
+                        >
                             {chartData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
@@ -96,6 +126,9 @@ export default function VideoDurationHistogram() {
                     </BarChart>
                 </ResponsiveContainer>
             </div>
+            <p className="text-sm text-primary font-medium mt-4 cursor-pointer hover:underline">
+                ※ 棒をクリックすると対象の動画を表示します
+            </p>
         </div>
     );
 }

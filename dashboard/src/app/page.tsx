@@ -7,9 +7,26 @@ import VideoGrowthChart from "@/components/VideoGrowthChart";
 import VideoSmallMultiples from "@/components/VideoSmallMultiples";
 import VideoFrequencyChart from "@/components/VideoFrequencyChart";
 import VideoDurationHistogram from "@/components/VideoDurationHistogram";
+import FilteredVideoList from "@/components/FilteredVideoList";
+import { VideoMeta } from "@/lib/queries";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"performance" | "analysis">("performance");
+  const [selectedVideos, setSelectedVideos] = useState<VideoMeta[]>([]);
+  const [filterLabel, setFilterLabel] = useState("");
+
+  const handleSelectVideos = (label: string, videos: VideoMeta[]) => {
+    setFilterLabel(label);
+    setSelectedVideos(videos);
+
+    // スクロールさせて気づきやすくする
+    setTimeout(() => {
+      const element = document.getElementById("filtered-list");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
+  };
 
   return (
     <div className="min-h-screen p-6 md:p-10 max-w-7xl mx-auto">
@@ -25,7 +42,10 @@ export default function Home() {
       {/* タブUI */}
       <div className="flex space-x-2 mb-10 border-b border-border">
         <button
-          onClick={() => setActiveTab("performance")}
+          onClick={() => {
+            setActiveTab("performance");
+            setSelectedVideos([]);
+          }}
           className={`px-4 py-2 font-semibold transition-colors relative ${activeTab === "performance"
               ? "text-foreground"
               : "text-muted hover:text-foreground"
@@ -79,21 +99,27 @@ export default function Home() {
             </section>
           </>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <section>
-              <h2 className="text-xl font-semibold text-foreground mb-4">
-                動画公開頻度
-              </h2>
-              <VideoFrequencyChart />
-            </section>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <section>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  動画公開頻度
+                </h2>
+                <VideoFrequencyChart onSelect={handleSelectVideos} />
+              </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-foreground mb-4">
-                動画の長さの分布
-              </h2>
-              <VideoDurationHistogram />
-            </section>
-          </div>
+              <section>
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  動画の長さの分布
+                </h2>
+                <VideoDurationHistogram onSelect={handleSelectVideos} />
+              </section>
+            </div>
+
+            <div id="filtered-list">
+              <FilteredVideoList videos={selectedVideos} label={filterLabel} />
+            </div>
+          </>
         )}
       </main>
 
