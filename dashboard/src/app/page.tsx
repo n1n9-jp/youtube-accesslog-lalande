@@ -4,6 +4,7 @@ import { useState } from "react";
 import ChannelOverview from "@/components/ChannelOverview";
 import TopVideos from "@/components/TopVideos";
 import VideoGrowthChart from "@/components/VideoGrowthChart";
+import VideoNormalizedGrowthChart from "@/components/VideoNormalizedGrowthChart";
 import VideoSmallMultiples from "@/components/VideoSmallMultiples";
 import VideoFrequencyChart from "@/components/VideoFrequencyChart";
 import VideoDurationHistogram from "@/components/VideoDurationHistogram";
@@ -122,7 +123,10 @@ export default function Home() {
               <h2 className="text-xl font-semibold text-foreground mb-4">
                 動画パフォーマンス
               </h2>
-              <VideoGrowthChart />
+              <div className="grid grid-cols-1 gap-8">
+                <VideoGrowthChart />
+                <VideoNormalizedGrowthChart />
+              </div>
             </section>
 
             <section>
