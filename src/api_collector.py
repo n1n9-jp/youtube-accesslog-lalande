@@ -6,7 +6,7 @@ from datetime import datetime
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from src.models import ChannelSnapshot, VideoMetadata, VideoSnapshot
+from src.models import ChannelSnapshot, ChannelMetadata, VideoMetadata, VideoSnapshot
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +65,35 @@ class ApiCollector:
             video_count=int(stats.get("videoCount", 0)),
             collected_at=now.isoformat(),
             collected_date=now.strftime("%Y-%m-%d"),
+        )
+
+    def get_channel_metadata(self, channel_id: str) -> ChannelMetadata:
+        response = self.youtube.channels().list(
+            part="snippet,brandingSettings",
+            id=channel_id,
+        ).execute()
+        self.quota.consume(1)
+
+        item = response["items"][0]
+        snippet = item["snippet"]
+        branding = item["brandingSettings"]
+        
+        # アイコンURL（高解像度を優先）
+        thumbnails = snippet.get("thumbnails", {})
+        thumb_url = (
+            thumbnails.get("high", {}).get("url")
+            or thumbnails.get("default", {}).get("url", "")
+        )
+        
+        # バナーURL
+        banner_url = branding.get("image", {}).get("bannerExternalUrl", "")
+        
+        return ChannelMetadata(
+            channel_id=channel_id,
+            title=snippet.get("title", ""),
+            thumbnail_url=thumb_url,
+            banner_url=banner_url,
+            updated_at=datetime.utcnow().isoformat(),
         )
 
     def get_uploads_playlist_id(self, channel_id: str) -> str:

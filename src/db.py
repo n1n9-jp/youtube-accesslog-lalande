@@ -1,7 +1,7 @@
 from datetime import datetime
 from supabase import create_client, Client
 
-from src.models import ChannelSnapshot, VideoMetadata, VideoSnapshot, ScrapedSnapshot
+from src.models import ChannelSnapshot, ChannelMetadata, VideoMetadata, VideoSnapshot, ScrapedSnapshot
 
 
 class Database:
@@ -28,6 +28,18 @@ class Database:
                 "collected_at": snap.collected_at,
             },
             on_conflict="channel_id,collected_date",
+        ).execute()
+
+    def insert_channel_metadata(self, meta: ChannelMetadata):
+        self.client.table("channel_metadata").upsert(
+            {
+                "channel_id": meta.channel_id,
+                "title": meta.title,
+                "thumbnail_url": meta.thumbnail_url,
+                "banner_url": meta.banner_url,
+                "updated_at": meta.updated_at,
+            },
+            on_conflict="channel_id",
         ).execute()
 
     # ── 動画メタデータ ──

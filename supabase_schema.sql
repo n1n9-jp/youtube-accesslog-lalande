@@ -1,16 +1,14 @@
--- Supabase SQL Editor で実行してテーブルを作成してください
-
--- チャンネル日次スナップショット
-CREATE TABLE channel_snapshots (
-    id BIGSERIAL PRIMARY KEY,
-    channel_id TEXT NOT NULL,
-    subscriber_count INTEGER,
-    total_view_count BIGINT,
-    video_count INTEGER,
-    collected_date TEXT NOT NULL,
-    collected_at TEXT NOT NULL,
-    UNIQUE(channel_id, collected_date)
+-- チャンネルメタデータ（アイコン、バナーなど）
+CREATE TABLE channel_metadata (
+    channel_id TEXT PRIMARY KEY,
+    title TEXT,
+    thumbnail_url TEXT,
+    banner_url TEXT,
+    updated_at TEXT NOT NULL
 );
+
+ALTER TABLE channel_metadata ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read" ON channel_metadata FOR SELECT USING (true);
 
 -- 動画メタデータ
 CREATE TABLE video_metadata (

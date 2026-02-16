@@ -14,6 +14,15 @@ class ChannelSnapshot:
 
 
 @dataclass
+class ChannelMetadata:
+    channel_id: str
+    title: str
+    thumbnail_url: str
+    banner_url: str
+    updated_at: str
+
+
+@dataclass
 class VideoMetadata:
     video_id: str
     title: str

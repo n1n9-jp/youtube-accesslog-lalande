@@ -15,6 +15,14 @@ export type VideoMeta = {
   thumbnail_url: string;
 };
 
+export type ChannelMetadata = {
+  channel_id: string;
+  title: string;
+  thumbnail_url: string;
+  banner_url: string;
+  updated_at: string;
+};
+
 export type VideoSnapshotRow = {
   video_id: string;
   view_count: number;
@@ -36,6 +44,19 @@ export async function fetchChannelSnapshots(
 
   if (error) throw error;
   return data ?? [];
+}
+
+export async function fetchChannelMetadata(
+  channelId: string
+): Promise<ChannelMetadata | null> {
+  const { data, error } = await getSupabase()
+    .from("channel_metadata")
+    .select("channel_id, title, thumbnail_url, banner_url, updated_at")
+    .eq("channel_id", channelId)
+    .single();
+
+  if (error) return null;
+  return data;
 }
 
 export async function fetchLatestChannelSnapshot(): Promise<ChannelSnapshot | null> {

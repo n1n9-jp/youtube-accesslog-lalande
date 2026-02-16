@@ -49,12 +49,16 @@ def collect_daily(db: Database):
 
     api = ApiCollector(YOUTUBE_API_KEY, API_DAILY_QUOTA_LIMIT)
 
-    # 1. チャンネル統計
-    logger.info("チャンネル統計を取得中...")
+    # 1. チャンネル統計 & メタデータ
+    logger.info("チャンネル情報を取得中...")
     channel = api.get_channel_stats(CHANNEL_ID)
     db.insert_channel_snapshot(channel)
+    
+    metadata = api.get_channel_metadata(CHANNEL_ID)
+    db.insert_channel_metadata(metadata)
+    
     logger.info(
-        f"チャンネル: 登録者 {channel.subscriber_count:,}, "
+        f"チャンネル: {metadata.title}, 登録者 {channel.subscriber_count:,}, "
         f"総再生 {channel.total_view_count:,}, "
         f"動画数 {channel.video_count}"
     )
